@@ -20,8 +20,7 @@ for filename in sorted(os.listdir(folder_path)):
     
     dataset.append({'pixels': pixels, 'target': target, 'name': filename})
 
-#Tutaj robimy b (znaczenie danej wagi) oraz w (wpływ danych kubitów na inne kubity)
-b = [dimod.Spin(f'b{i}') for i in range(4)]
+#Tutaj robimy to samo co w test2.py tylko jako niewiadomo a nie manualne interakcje jak wtedy
 pairs = [(0,1), (0,2), (0,3), (1,2), (1,3), (2,3)]
 w = [dimod.Spin(f'w{u}{v}') for u,v in pairs]
 
@@ -32,9 +31,6 @@ for item in dataset:
     tgt = item['target']
     
     current_energy_expression = 0
-
-    for i in range(4):
-        current_energy_expression += b[i] * px[i]
 
     for idx, (u, v) in enumerate(pairs):
         weight_sign = px[u] * px[v]
