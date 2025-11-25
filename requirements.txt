@@ -1,0 +1,10 @@
+dimod==0.12.21
+dwave_cloud_client==0.14.3
+dwave_gate==0.3.4
+dwave_inspector==0.5.5
+dwave_neal==0.6.0
+dwave_preprocessing==0.6.11
+dwave_samplers==1.7.0
+dwave_system==1.34.0
+numpy==2.3.5
+Pillow==12.0.0
