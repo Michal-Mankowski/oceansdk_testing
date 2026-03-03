@@ -88,10 +88,11 @@ for i in range(len(y_true)):
 final_acc = accuracy_score(y_true, y_pred)
 cm = confusion_matrix(y_true, y_pred)
 
-plt.figure(figsize=(10, 8))
+plt.figure(figsize=(8, 6))
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
 plt.xlabel('Przewidziana Cyfra')
 plt.ylabel('Prawdziwa Cyfra')
 
-plt.title(f'Confusion Matrix \nValidation Accuracy: {final_acc*100:.2f}%')
+plt.title(f'Neurons (Test Accuracy: {final_acc*100:.2f}%)', fontsize=16)
+plt.savefig('wykresy_kwantowy/neurons_confusion.png')
 plt.show()

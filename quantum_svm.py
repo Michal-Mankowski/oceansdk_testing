@@ -3,6 +3,9 @@ import neal
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
 import dimod
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
 
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
 
@@ -96,8 +99,19 @@ def pdist_to_train(A, B):
     sq_B = np.sum(B**2, axis=1)
     return sq_A + sq_B - 2 * np.dot(A, B.T)
 
+
 y_pred = predict(X_test)
 accuracy = np.mean(y_pred == y_test)
-print(f"Accuracy na małej próbce testowej: {accuracy * 100:.2f}%")
+print(f"Accuracy: {accuracy * 100:.2f}%")
+
+cm = confusion_matrix(y_test, y_pred)
+
+plt.figure(figsize=(10, 8))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+plt.title(f'SVM (Test Accuracy: {accuracy*100:.2f}%)', fontsize=16)
+plt.xlabel('Przewidziana Klasa')
+plt.ylabel('Prawdziwa Klasa')
+plt.savefig('wykresy_kwantowy/svm_confusion_matrix.png')
+plt.show()
      
 
