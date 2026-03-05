@@ -1,3 +1,5 @@
+# train accuracy: 82.79%
+
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -79,32 +81,6 @@ test_loss, test_accuracy = model.evaluate(x_test, y_test, verbose=0)
 print(f"Dokładność testowa: {test_accuracy:.4f}")
 print(f"Strata testowa: {test_loss:.4f}")
 
-trained_weights = model.layers[0].get_weights()[0] 
-bw = np.where(trained_weights >= 0, 1, -1)
-sample_imgs = x_test[:10].numpy()
-sample_imgs_bin = np.where(sample_imgs >= 0, 1, -1)
-sample_labels = y_test[:10]
-
-plt.figure(figsize=(15, 6))
-for i in range(10):
-    img_vec = sample_imgs_bin[i]
-    scores = np.dot(img_vec, bw)
-    prediction = np.argmax(scores)
-    plt.subplot(2, 5, i + 1)
-    display_img = img_vec.reshape(28, 28)
-    plt.imshow(display_img, cmap='gray')
-    color = 'green' if prediction == sample_labels[i] else 'red'
-    plt.title(f"Pred: {prediction}\nTrue: {sample_labels[i]}", color=color)
-    plt.axis('off')
-plt.tight_layout()
-plt.show()
-
-acc = history.history['accuracy']
-val_acc = history.history['val_accuracy']
-loss = history.history['loss']
-val_loss = history.history['val_loss']
-epochs_range = range(1, len(acc) + 1)
-
 y_pred_probs = model.predict(x_test, verbose=0)
 y_pred = np.argmax(y_pred_probs, axis=1)
 
@@ -114,4 +90,5 @@ sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
 plt.title(f'Classic XNORNET (28x28) (Test Accuracy: {test_accuracy*100:.2f}%)', fontsize=16)
 plt.xlabel('Przewidziana Klasa')
 plt.ylabel('Prawdziwa Klasa')
+plt.savefig('wykresy_kwantowy/classic_xnornet28_confusion_matrix.png')
 plt.show()

@@ -1,3 +1,5 @@
+# train accuracy: 91.79%
+
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -137,4 +139,5 @@ sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
 plt.title(f'Classic CNN (Test Accuracy: {test_accuracy*100:.2f}%)', fontsize=16)
 plt.xlabel('Przewidziana Klasa')
 plt.ylabel('Prawdziwa Klasa')
+plt.savefig('wykresy_kwantowy/classic_cnn_confusion_matrix.png')
 plt.show()
