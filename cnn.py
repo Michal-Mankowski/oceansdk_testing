@@ -123,7 +123,7 @@ plt.title('Dokładność Modelu', fontsize=16)
 plt.ylabel('Accuracy [%]')
 for i, v in enumerate(values):
     plt.text(i, v + 2, f"{v:.2f}%", ha='center', fontweight='bold')
-plt.savefig('wykresy_kwantowy/cnn_accuracy.png')
+# plt.savefig('wykresy_kwantowy/cnn_accuracy.png')
 plt.show()
 
 
@@ -134,7 +134,7 @@ plt.xlabel('Cyfra')
 plt.ylabel('Energia')
 plt.title('Minimalizowana energia na klasę', fontsize=16)
 plt.grid(True, alpha=0.2)
-plt.savefig('wykresy_kwantowy/cnn_energia.png')
+# plt.savefig('wykresy_kwantowy/cnn_energia.png')
 plt.show()
 
 
@@ -144,5 +144,5 @@ sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
 plt.title(f'CNN (Test Accuracy: {test_acc*100:.2f}%)', fontsize=16)
 plt.xlabel('Przewidziana Klasa')
 plt.ylabel('Prawdziwa Klasa')
-plt.savefig('wykresy_kwantowy/cnn_confusion_matrix.png')
+# plt.savefig('wykresy_kwantowy/cnn_confusion_matrix.png')
 plt.show()
