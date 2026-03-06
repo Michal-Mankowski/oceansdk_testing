@@ -16,14 +16,13 @@ X_train = preprocess(X_train)
 X_test = preprocess(X_test)
 
 batch_size = 1000
-num_features = 256
 num_classes = 10
 
 sampler = neal.SimulatedAnnealingSampler()
 
 K = 2
 B = 2
-lam = 10
+lam = 1
 gamma = 0.01
 
 parameters = {}
