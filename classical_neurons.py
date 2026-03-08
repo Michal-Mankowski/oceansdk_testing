@@ -85,8 +85,8 @@ cm = confusion_matrix(y_true_list, y_pred_list)
 
 plt.figure(figsize=(10, 8))
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-plt.xlabel('Przewidziana Cyfra')
-plt.ylabel('Prawdziwa Cyfra')
+plt.xlabel('Predicted')
+plt.ylabel('True')
 plt.title(f'Classic Neurons (Test Accuracy: {final_acc*100:.2f}%)', fontsize=16)
 
 plt.savefig('wykresy_kwantowy/classical_neurons_confusion.png')
