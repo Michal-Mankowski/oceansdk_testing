@@ -1,3 +1,5 @@
+# train accuracy: 92.38%
+
 import numpy as np
 import neal
 import matplotlib.pyplot as plt

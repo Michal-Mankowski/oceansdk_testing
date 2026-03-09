@@ -1,4 +1,4 @@
-# train accuracy: 78.94%
+# train accuracy: 79.61%
 
 import tensorflow as tf
 import numpy as np
