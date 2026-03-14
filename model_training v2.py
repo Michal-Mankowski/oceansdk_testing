@@ -5,9 +5,11 @@ import seaborn as sns
 from tensorflow.keras.datasets import mnist
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
+from time import perf_counter_ns
+import dwave_networkx as dnx
+from minorminer import find_embedding
 
 
-print("Przygotowywanie danych...")
 (x_all, y_all), (x_test_raw, y_test) = mnist.load_data()
 
 def preprocess(data):
@@ -19,15 +21,22 @@ x_test = preprocess(x_test_raw)
 
 batch_size = 2000
 alpha = 0.013
-num_features = 784
+num_features = 28*28
 num_classes = 10
 
 sampler = neal.SimulatedAnnealingSampler()
 trained_weights = np.zeros((num_classes, num_features))
 energies = []
 
+times_classical = []
+times_quantum = []
+advantage_chip = dnx.zephyr_graph(15)
+
+coords = [(i//28, i%28) for i in range(num_features)]
+coords = np.array(coords)
 
 for digit in range(num_classes):
+    start_time_classical = perf_counter_ns()
     pos_idx = np.where(y_train == digit)[0]
     neg_idx = np.where(y_train != digit)[0]
     
@@ -43,9 +52,42 @@ for digit in range(num_classes):
     h_batch = np.dot(x_batch.T, y_target)
     
     h_dict = {i: -2 * h_batch[i] for i in range(num_features)}
-    J_dict = {(i, j): 2 * J_batch[i, j] for i in range(num_features) for j in range(i+1, num_features) if abs(J_batch[i, j]) > 0.01}
+    
+    radius = 2
+    J_dict = {}
 
+    for i in range(num_features):
+        xi, yi = coords[i]
+        for j in range(i+1, num_features):
+            xj, yj = coords[j]
+            if abs(xi-xj) <= radius and abs(yi-yj) <= radius:
+                w = J_batch[i, j]
+                if w != 0:
+                    J_dict[(i, j)] = 2 * w
+    max_edges = 8560
+    if len(J_dict) > max_edges:
+        edges_sorted = sorted(J_dict.items(), key=lambda x: abs(x[1]), reverse=True)
+        J_dict = dict(edges_sorted[:max_edges])
+    print("Edges:", len(J_dict))
+    embedding = find_embedding(J_dict.keys(), advantage_chip.edges)
+    if not J_dict:
+        print("Puste")
+    if embedding:
+        total_qubits = sum(len(chain) for chain in embedding.values())
+        max_chain = max(len(chain) for chain in embedding.values())
+        print(f"Użyto {total_qubits}/5760 kubitów.")
+        print(f"Najdłuższy łańcuch kubitów: {max_chain} kubity.")
+    else:
+        print("Za dużo nadal.")
+
+    end_time_classical = perf_counter_ns()
+    times_classical.append(end_time_classical - start_time_classical)
+    
+    start_time_quantum = perf_counter_ns()
     sampleset = sampler.sample_ising(h_dict, J_dict, num_reads=10, sweeps=1000)
+    end_time_quantum = perf_counter_ns()
+
+    times_quantum.append(end_time_quantum - start_time_quantum)
     
     best_sample = sampleset.first.sample
     trained_weights[digit] = np.array([best_sample[i] for i in range(num_features)])
@@ -65,6 +107,9 @@ train_acc = np.mean(train_pred == y_train)
 val_acc = np.mean(val_pred == y_val)
 test_acc = np.mean(test_pred == y_test)
 
+np.save('modele_symulowane/xnornet_28x28_weights.npy', trained_weights)
+print(f"Klasyczne czasy XNORNET 28x28 (s): {[t / 1e9 for t in times_classical]}")
+print(f"Symulowane kwantowe czasy XNORNET 28x28 (s): {[t / 1e9 for t in times_quantum]}")
 
 plt.figure(figsize=(8, 6))
 labels = ['Train', 'Val', 'Test']
@@ -96,5 +141,5 @@ sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
 plt.title(f'XNORNET (28x28) (Test Accuracy: {test_acc*100:.2f}%)', fontsize=16)
 plt.xlabel('Predicted')
 plt.ylabel('True')
-plt.savefig('wykresy_kwantowy/xnornet28_confusion_matrix.png')
+#plt.savefig('wykresy_kwantowy/xnornet28_confusion_matrix.png')
 plt.show()

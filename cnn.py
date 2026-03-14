@@ -10,6 +10,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.datasets import mnist
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
+from time import perf_counter_ns
 
 (x_all, y_all), (x_test, y_test) = mnist.load_data()
 
@@ -21,7 +22,8 @@ def cnn():
         Conv2D(filters=4, kernel_size=(3, 3), strides=(1, 1), padding='valid', use_bias=False),
         
         ReLU(),
-        MaxPooling2D(pool_size=(2, 2)) 
+        MaxPooling2D(pool_size=(2, 2)), 
+        MaxPooling2D(pool_size=(2, 2), padding='valid')
     ])
 
     weights_array = np.zeros((3, 3, 1, 4))
@@ -69,9 +71,12 @@ sampler = neal.SimulatedAnnealingSampler()
 trained_weights = np.zeros((num_classes, num_features))
 energies = []
 
+times_classical = 0
+times_quantum = 0
+
 for digit in range(num_classes):
     print(f"Trenowanie cyfry {digit}/9...")
-    
+    start_time_classical = perf_counter_ns()
     pos_idx = np.where(y_train == digit)[0]
     neg_idx = np.where(y_train != digit)[0]
     
@@ -96,12 +101,24 @@ for digit in range(num_classes):
             if abs(J_batch[i, j]) > 0.08:
                 J_dict[(i, j)] = 2 * J_batch[i, j]
 
-    sampleset = sampler.sample_ising(h_dict, J_dict, num_reads=10, sweeps=1000)
     
+    end_time_classical = perf_counter_ns()
+    times_classical += end_time_classical - start_time_classical
+    
+    
+    
+    start_time_quantum = perf_counter_ns()
+    sampleset = sampler.sample_ising(h_dict, J_dict, num_reads=10, sweeps=1000)
+    end_time_quantum = perf_counter_ns()
+    times_quantum += end_time_quantum - start_time_quantum
+
     best_sample = sampleset.first.sample
     trained_weights[digit] = np.array([best_sample[i] for i in range(num_features)])
     energies.append(sampleset.first.energy)
 
+np.save('modele_symulowane/cnn_weights.npy', trained_weights)
+print(f"Classical time: {times_classical/1e9}")
+print(f"Quantum simulated time: {times_quantum/1e9}")
 
 def get_predictions(x):
     scores = np.dot(x, trained_weights.T)

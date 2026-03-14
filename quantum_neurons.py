@@ -5,6 +5,7 @@ from tensorflow.keras.datasets import mnist
 from sklearn.metrics import confusion_matrix, accuracy_score
 import matplotlib.pyplot as plt
 import seaborn as sns
+from time import perf_counter_ns
 
 (x_train_raw, y_train_raw), (x_test_raw, y_test_raw) = mnist.load_data()
 
@@ -32,11 +33,16 @@ def get_nudge(y):
 
 num_epochs = 13
 
+times_classical = 0
+times_quantum = 0
+
 for epoch in range(num_epochs):
     idx_batch = np.random.choice(len(X_train), 1000)
     hits = 0
     
     for idx in idx_batch:
+        
+        start_time_classical = perf_counter_ns()
         x, y = X_train[idx], y_train_raw[idx]
         nudge_vec = get_nudge(y)
         
@@ -47,8 +53,13 @@ for epoch in range(num_epochs):
             
         j_ising = {(i, N_HIDDEN + alpha): -J[i, alpha] 
                    for i in range(N_HIDDEN) for alpha in range(N_OUT)}
-        
+        end_time_classical = perf_counter_ns()
+        times_classical += end_time_classical - start_time_classical
+
+        start_time_quantum = perf_counter_ns()
         res = sampler.sample_ising(h_ising, j_ising, num_reads=m_samples, sweeps=1000)
+        end_time_quantum = perf_counter_ns()
+        times_quantum += end_time_quantum - start_time_quantum
         
         samples = res.record.sample
         s_h_samples = samples[:, :N_HIDDEN]
@@ -73,6 +84,10 @@ for epoch in range(num_epochs):
 
 y_true = y_test_raw
 y_pred = []
+
+np.savez('modele_symulowane/neuron_weights.npz', W=W, J=J, b_h=b_h, b_o=b_o)
+print(f"Classical time: {times_classical/1e9}")
+print(f"Quantum simulated time: {times_quantum/1e9}")
 
 for i in range(len(y_true)):
     x = X_test[i]
